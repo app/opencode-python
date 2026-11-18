@@ -1,3 +1,5 @@
+# check=skip=InvalidDefaultArgInFrom
+#
 # OpenCode image for Python development, tuned for OR-Tools optimization work.
 #
 # The OpenCode, CPython and yq versions are resolved by the GitHub Actions
@@ -12,6 +14,10 @@
 #
 # Secrets are never baked in. The runtime env template is copied to
 # /home/opencode/.env.example for the env-setup agent skill.
+#
+# The versions below are always supplied by the workflow and have no defaults
+# in this file; the check directive on the first line silences the FROM lint
+# rule for that deliberate choice.
 ARG OPENCODE_VERSION
 ARG PYTHON_VERSION
 ARG YQ_VERSION
