@@ -1,0 +1,6 @@
+.env
+.cache/
+tmp/
+.opencode/usage/
+__pycache__/
+.venv/
