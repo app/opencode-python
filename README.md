@@ -1,5 +1,7 @@
 # opencode-python
 
+[![Build](https://github.com/app/opencode-python/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/app/opencode-python/actions/workflows/build.yml)
+
 A container image that runs [OpenCode](https://opencode.ai) for Python
 development, tuned for optimization work with Google OR-Tools. Nothing to
 install: one run command from your project directory and the agent is working —
@@ -39,9 +41,10 @@ connect OpenRouter with the TUI's `/connect` command. See
 ## The image
 
 - **Rolling latest.** GitHub Actions builds and publishes the image to GHCR on
-  every push and on a schedule, with the current upstream OpenCode, the newest
-  CPython that OR-Tools supports, and the current yq — see
-  [Updating](docs/updating.md).
+  every push and on a daily schedule (06:17 UTC), with the current upstream
+  OpenCode, the newest CPython that OR-Tools supports, and the current yq. The
+  schedule also compares the resolved versions with `versions.json` and opens a
+  pull request when they differ — see [Updating](docs/updating.md).
 - **Python toolchain.** CPython on Debian, `uv` for environments and tools,
   `ruff`, `basedpyright`, `mypy`, `pytest`, `pre-commit`, `py-spy`,
   `ast-grep`, plus git, `gh`, `glab` and the usual agent tooling — see

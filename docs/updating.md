@@ -21,8 +21,11 @@ to update on the host:
   Debian trixie does not package `uv`, so the image installs the current `uv`
   from PyPI during the build.
 
-The workflow resolves them on every run (push to `main`, the daily schedule, or
-`workflow_dispatch`) and rebuilds the image.
+The workflow resolves them on every run (push to `main`, the daily schedule at
+06:17 UTC, or `workflow_dispatch`) and rebuilds the image. The scheduled run is
+also the version watch: it always rebuilds with whatever upstream published, and
+the final job compares the resolved versions with `versions.json`, opening the
+pin update pull request only when something moved.
 
 ## Image tags
 
