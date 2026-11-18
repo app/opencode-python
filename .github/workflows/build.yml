@@ -1,0 +1,280 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * *"
+
+permissions:
+  contents: write
+  packages: write
+  # GITHUB_TOKEN needs this for the update-pins job to open its pull request
+  # with peter-evans/create-pull-request.
+  pull-requests: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: opencode-python
+
+jobs:
+  resolve:
+    runs-on: ubuntu-26.04
+    outputs:
+      opencode: ${{ steps.versions.outputs.opencode }}
+      ortools: ${{ steps.versions.outputs.ortools }}
+      python: ${{ steps.versions.outputs.python }}
+      yq: ${{ steps.versions.outputs.yq }}
+      date: ${{ steps.versions.outputs.date }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Resolve current versions
+        id: versions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash scripts/resolve-versions.sh >> "$GITHUB_OUTPUT"
+          echo "date=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: resolve
+    # One native builder per architecture: no QEMU, and the smoke test runs on
+    # the same architecture users run.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            platform: linux/amd64
+            arch: amd64
+          - runner: ubuntu-26.04-arm
+            platform: linux/arm64
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Containerfile
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            OPENCODE_VERSION=${{ needs.resolve.outputs.opencode }}
+            PYTHON_VERSION=${{ needs.resolve.outputs.python }}
+            YQ_VERSION=${{ needs.resolve.outputs.yq }}
+          outputs: >-
+            type=image,name=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-buildcache:build-${{ matrix.arch }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-buildcache:build-${{ matrix.arch }},mode=max
+
+      - name: Smoke test
+        env:
+          SMOKE_PASSWORD: smoke-test-password
+          REF: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          EXPECTED_PYTHON: ${{ needs.resolve.outputs.python }}
+          EXPECTED_OPENCODE: ${{ needs.resolve.outputs.opencode }}
+        run: |
+          set -euo pipefail
+          # buildx pushes the image but does not load it into the local
+          # daemon; pull it first.
+          docker pull "$REF"
+
+          # Guard: the image must default to the interactive TUI, not the server.
+          IMAGE_CMD="$(docker inspect --format '{{join .Config.Cmd " "}}' "$REF")"
+          if [[ "$IMAGE_CMD" != "opencode" ]]; then
+            echo "Unexpected image default CMD: $IMAGE_CMD" >&2
+            exit 1
+          fi
+          LABEL_PYTHON="$(docker inspect --format '{{index .Config.Labels "org.opencode-python.python"}}' "$REF")"
+          if [[ "$LABEL_PYTHON" != "$EXPECTED_PYTHON" ]]; then
+            echo "Python label mismatch: expected $EXPECTED_PYTHON, got $LABEL_PYTHON." >&2
+            exit 1
+          fi
+
+          # The baked toolchain answers without a project.
+          docker run --rm "$REF" bash -c '
+            set -e
+            python -V
+            uv --version
+            ruff --version
+            mypy --version
+            pytest --version
+            yq --version
+            ast-grep --version
+            py-spy --version
+            basedpyright-langserver --version
+          '
+
+          # OR-Tools: install it in a throwaway venv and solve a small CP-SAT
+          # model. This is the combination the image exists for.
+          docker run --rm \
+            -v "$PWD/scripts/smoke-ortools.py:/tmp/smoke-ortools.py:ro" \
+            "$REF" bash -c '
+              set -e
+              uv venv -q /tmp/ortools
+              uv pip install -q --python /tmp/ortools/bin/python ortools
+              /tmp/ortools/bin/python /tmp/smoke-ortools.py
+            '
+
+          # The server mode is started explicitly.
+          docker run -d --name opencode-smoke -e OPENCODE_PASSWORD="$SMOKE_PASSWORD" \
+            "$REF" opencode serve --hostname 0.0.0.0 --port 4096
+          trap 'docker rm -f opencode-smoke >/dev/null 2>&1 || true' EXIT
+          up=""
+          for _ in $(seq 1 60); do
+            if docker exec opencode-smoke curl -fsS -u "opencode:$SMOKE_PASSWORD" \
+              http://localhost:4096/api/info >/dev/null 2>&1; then
+              up="yes"
+              break
+            fi
+            sleep 2
+          done
+          [[ "$up" == "yes" ]] || { echo "The server did not come up." >&2; exit 1; }
+          INFO="$(docker exec opencode-smoke curl -fsS -u "opencode:$SMOKE_PASSWORD" \
+            http://localhost:4096/api/info)"
+          echo "$INFO"
+          # Best effort: verify the server reports the version we built.
+          VERSION="$(jq -r '.version // empty' <<<"$INFO")"
+          if [[ -n "$VERSION" && "$VERSION" != "$EXPECTED_OPENCODE" ]]; then
+            echo "Server version mismatch: expected $EXPECTED_OPENCODE, got $VERSION." >&2
+            exit 1
+          fi
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: [resolve, build]
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create the multi-arch manifests
+        working-directory: /tmp/digests
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          OPENCODE: ${{ needs.resolve.outputs.opencode }}
+          PYTHON: ${{ needs.resolve.outputs.python }}
+          DATE: ${{ needs.resolve.outputs.date }}
+        run: |
+          set -euo pipefail
+          refs=()
+          for file in *; do
+            refs+=("${IMAGE}@sha256:${file}")
+          done
+          if ((${#refs[@]} < 2)); then
+            echo "Expected two architecture digests, found ${#refs[@]}." >&2
+            exit 1
+          fi
+          docker buildx imagetools create \
+            --tag "${IMAGE}:latest" \
+            --tag "${IMAGE}:oc-${OPENCODE}-py${PYTHON}" \
+            --tag "${IMAGE}:${DATE}" \
+            "${refs[@]}"
+          docker buildx imagetools inspect "${IMAGE}:latest"
+
+  update-pins:
+    needs: [resolve, merge]
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Compare with versions.json
+        id: diff
+        env:
+          OPENCODE: ${{ needs.resolve.outputs.opencode }}
+          ORTOOLS: ${{ needs.resolve.outputs.ortools }}
+          PYTHON: ${{ needs.resolve.outputs.python }}
+          YQ: ${{ needs.resolve.outputs.yq }}
+        run: |
+          set -euo pipefail
+          CURRENT="$(jq -cS . versions.json)"
+          NEW="$(jq -cnS \
+            --arg oc "$OPENCODE" \
+            --arg ot "$ORTOOLS" \
+            --arg py "$PYTHON" \
+            --arg yq "$YQ" \
+            '{opencode: $oc, ortools: $ot, python: $py, yq: $yq}')"
+          if [[ "$CURRENT" == "$NEW" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write updated versions.json
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          OPENCODE: ${{ needs.resolve.outputs.opencode }}
+          ORTOOLS: ${{ needs.resolve.outputs.ortools }}
+          PYTHON: ${{ needs.resolve.outputs.python }}
+          YQ: ${{ needs.resolve.outputs.yq }}
+        run: |
+          jq -cnS \
+            --arg oc "$OPENCODE" \
+            --arg ot "$ORTOOLS" \
+            --arg py "$PYTHON" \
+            --arg yq "$YQ" \
+            '{opencode: $oc, ortools: $ot, python: $py, yq: $yq}' > versions.json
+
+      - name: Create pull request with updated pins
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/update-pinned-versions
+          base: main
+          title: "chore: update pinned versions to OpenCode ${{ needs.resolve.outputs.opencode }}, Python ${{ needs.resolve.outputs.python }}, OR-Tools ${{ needs.resolve.outputs.ortools }}"
+          commit-message: "chore: update pinned versions"
+          body: |
+            The build workflow resolved newer upstream versions than the pins
+            recorded in `versions.json`. Merging this pull request rebuilds and
+            republishes the image with the new versions.
+
+            - OpenCode: `${{ needs.resolve.outputs.opencode }}`
+            - Python: `${{ needs.resolve.outputs.python }}` (bounded by OR-Tools)
+            - OR-Tools: `${{ needs.resolve.outputs.ortools }}`
+            - yq: `${{ needs.resolve.outputs.yq }}`
