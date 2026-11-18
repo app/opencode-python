@@ -61,3 +61,7 @@ or `gh run list` / `gh run watch`), and on failure read the logs
 architecture: it checks the image default, starts the server and answers
 `GET /api/info` with Basic auth, and installs OR-Tools in a throwaway venv to
 solve a small CP-SAT model.
+
+The workflow also maintains the `status` branch: a single commit holding
+`status.json`, the data behind the README's last-build badge. It is written by
+CI only; never edit or merge that branch.

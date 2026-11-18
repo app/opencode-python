@@ -280,3 +280,48 @@ jobs:
             - Python: `${{ needs.resolve.outputs.python }}` (bounded by OR-Tools)
             - OR-Tools: `${{ needs.resolve.outputs.ortools }}`
             - yq: `${{ needs.resolve.outputs.yq }}`
+
+  status:
+    # Publishes the last-build badge JSON. It runs even when the build fails,
+    # so the badge turns red instead of showing a stale green.
+    needs: [resolve, build, merge]
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Compose the status badge
+        env:
+          MERGE_RESULT: ${{ needs.merge.result }}
+          OPENCODE: ${{ needs.resolve.outputs.opencode }}
+          PYTHON: ${{ needs.resolve.outputs.python }}
+        run: |
+          set -euo pipefail
+          now="$(date -u '+%Y-%m-%d %H:%M') UTC"
+          if [[ "$MERGE_RESULT" == "success" ]]; then
+            color=green
+            message="${now} · oc ${OPENCODE:-?} / py ${PYTHON:-?}"
+          else
+            color=red
+            message="${now} · failed"
+          fi
+          jq -n \
+            --arg message "$message" \
+            --arg color "$color" \
+            '{schemaVersion: 1, label: "build", message: $message, color: $color, cacheSeconds: 300}' \
+            > status.json
+          cat status.json
+
+      - name: Publish the status branch
+        # The branch holds a single commit with status.json; the checkout
+        # credentials cover the push, so no token is written into the URL.
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan status
+          git read-tree --empty
+          git add status.json
+          git commit --allow-empty -q -m "chore: update the build status badge"
+          git push --force origin status

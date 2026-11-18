@@ -1,6 +1,7 @@
 # opencode-python
 
 [![Build](https://github.com/app/opencode-python/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/app/opencode-python/actions/workflows/build.yml)
+[![Last build](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fapp%2Fopencode-python%2Fstatus%2Fstatus.json)](https://github.com/app/opencode-python/actions/workflows/build.yml)
 
 A container image that runs [OpenCode](https://opencode.ai) for Python
 development, tuned for optimization work with Google OR-Tools. Nothing to

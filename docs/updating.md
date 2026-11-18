@@ -27,6 +27,14 @@ also the version watch: it always rebuilds with whatever upstream published, and
 the final job compares the resolved versions with `versions.json`, opening the
 pin update pull request only when something moved.
 
+## The last-build badge
+
+The README's second badge shows the date, time and versions of the last build.
+The `status` job runs at the end of every `main` build (successful or not) and
+force-pushes a single-file branch, `status`, whose `status.json` follows the
+[shields.io endpoint](https://shields.io/badges/endpoint-badge) schema. The
+branch is written by CI only; do not edit it by hand.
+
 ## Image tags
 
 | Tag                                        | Meaning                                |
