@@ -3,9 +3,6 @@
 [![Build](https://github.com/app/opencode-python/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/app/opencode-python/actions/workflows/build.yml)
 [![Last build](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fapp%2Fopencode-python%2Fstatus%2Fstatus.json)](https://github.com/app/opencode-python/actions/workflows/build.yml)
 
-_A cozy little house for your coding agent: the venv is ready, Python is warm,
-and OR-Tools has already optimized who sits by the fire._
-
 A container image that runs [OpenCode](https://opencode.ai) for Python
 development, tuned for optimization work with Google OR-Tools. Nothing to
 install: one run command from your project directory and the agent is working —
