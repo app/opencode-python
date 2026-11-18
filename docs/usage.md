@@ -12,6 +12,7 @@ Podman:
 
 ```bash
 podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \
+  --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
   --detach-keys="ctrl-],ctrl-q" \
@@ -22,6 +23,7 @@ Docker (the same, with `--user` instead of `--userns`):
 
 ```bash
 docker run -it --rm --user "$(id -u):$(id -g)" \
+  --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
   --detach-keys="ctrl-],ctrl-q" \
@@ -41,7 +43,9 @@ to the command. The optional
 Server mode is an explicit command on top of the same image:
 
 ```bash
-podman run -d --name opencode --userns=keep-id:uid=1000,gid=1000 -p 4096:4096 \
+podman run -d \
+  --name "opencode-$$" \
+  --userns=keep-id:uid=1000,gid=1000 -p 4096:4096 \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
   --env-file .env \
@@ -57,21 +61,10 @@ The same works with Docker (with `--user "$(id -u):$(id -g)"` instead of
 
 To open the [web UI](api.md#web-ui), create a pairing link from inside the
 running container:
-
-Podman:
-
-```bash
-podman exec -it --detach-keys="ctrl-],ctrl-q" opencode opencode pair
-```
-
-Docker:
-
-```bash
-docker exec -it --detach-keys="ctrl-],ctrl-q" opencode opencode pair
-```
-
-and open the printed link in a browser. The [HTTP API](api.md#http-api-agents)
-is available under Basic auth on the same port.
+`podman exec -it --detach-keys="ctrl-],ctrl-q" <name> opencode pair`
+(`<name>` is the container name, see [Logs](#logs)), and open the printed
+link in a browser. The [HTTP API](api.md#http-api-agents) is available under
+Basic auth on the same port.
 
 ## Mounts
 
@@ -89,6 +82,9 @@ is available under Basic auth on the same port.
 - `--detach-keys="ctrl-],ctrl-q"` (in every command above) moves the
   engine's detach sequence off the default `ctrl-p ctrl-q`, which would
   swallow the TUI's `ctrl-p` command palette key.
+- `--name "opencode-$$"` (in every command in this repository) names the
+  container after the PID of the shell that ran it, so parallel sessions in
+  different terminals do not collide and `podman ps` stays readable.
 - Mount sibling projects read-only with extra `-v` mounts under
   `/home/opencode/projects/`, for example
   `-v ../other-model:/home/opencode/projects/other-model:ro` (the launcher's
@@ -155,6 +151,7 @@ shell works — append it to the run command:
 
 ```bash
 podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \
+  --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   --detach-keys="ctrl-],ctrl-q" \
   ghcr.io/app/opencode-python:latest \
@@ -166,17 +163,11 @@ replace the command with `bash`; `uv`, `ruff` and the rest are on the `PATH`.
 
 ## Logs
 
-Podman:
+The container name (and its published ports) is shown by:
 
 ```bash
-podman logs -f opencode
+podman ps --format "table {{.ID}}\t{{.Status}}\t{{.Names}}\t{{.Ports}}" | grep opencode
 ```
 
-Docker:
-
-```bash
-docker logs -f opencode
-```
-
-In server mode, the generated server password (when `OPENCODE_PASSWORD` is
-empty) is printed here on start.
+The log is read with `podman logs -f <name>`. In server mode, the generated
+server password (when `OPENCODE_PASSWORD` is empty) is printed there on start.

@@ -37,7 +37,8 @@ Common errors and fixes.
 - The server binds `0.0.0.0:4096` inside the container; without the port
   publication the host cannot reach it.
 - Give it a few seconds on first start, then check the log for the
-  `server listening on http://0.0.0.0:4096` line: `podman logs opencode`.
+  `server listening on http://0.0.0.0:4096` line: find the container name in
+  [Usage](usage.md#logs), then `podman logs -f <name>`.
 - In Kubernetes, the pod must be `Ready` (TCP probe) and the Service must
   select `app: opencode`; `kubectl port-forward svc/opencode 4096:4096`.
 
@@ -45,7 +46,8 @@ Common errors and fixes.
 
 - The username is always `opencode`; only the password changes.
 - When `OPENCODE_PASSWORD` is empty, the server generated a password and
-  printed it to the container log on start (`podman logs opencode`,
+  printed it to the container log on start (find the name in
+  [Usage](usage.md#logs), then `podman logs -f <name>`; in Kubernetes:
   `kubectl logs deploy/opencode`).
 - Pairing links for the web UI do not use the password at all; the browser
   session is created through the one-time link.

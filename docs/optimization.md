@@ -70,6 +70,7 @@ Give the container room:
 
 ```bash
 podman run -it --rm --cpus 4 --memory 8g \
+  --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
   --detach-keys="ctrl-],ctrl-q" \

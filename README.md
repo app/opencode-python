@@ -19,6 +19,7 @@ Podman:
 
 ```bash
 podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \
+  --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
   --detach-keys="ctrl-],ctrl-q" \
@@ -29,6 +30,7 @@ Docker (the same, with `--user` instead of `--userns`):
 
 ```bash
 docker run -it --rm --user "$(id -u):$(id -g)" \
+  --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
   --detach-keys="ctrl-],ctrl-q" \

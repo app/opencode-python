@@ -9,6 +9,7 @@ The image default. From the project directory:
 
 ```bash
 podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \
+  --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
   --detach-keys="ctrl-],ctrl-q" \
@@ -24,18 +25,8 @@ inside the container and needs no password.
 The web UI is served by the
 [server mode](usage.md#start-the-server-web-ui-http-api). To sign in, create a
 pairing link from inside the running container:
-
-Podman:
-
-```bash
-podman exec -it --detach-keys="ctrl-],ctrl-q" opencode opencode pair
-```
-
-Docker:
-
-```bash
-docker exec -it --detach-keys="ctrl-],ctrl-q" opencode opencode pair
-```
+`podman exec -it --detach-keys="ctrl-],ctrl-q" <name> opencode pair`
+(`<name>` is the container name, see [Logs](usage.md#logs)).
 
 Open the printed link in a browser (the port must be published,
 `-p 4096:4096`). Links work once and expire in 5 minutes; sessions last
