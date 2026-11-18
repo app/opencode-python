@@ -119,7 +119,9 @@ jobs:
             yq --version
             ast-grep --version
             py-spy --version
-            basedpyright-langserver --version
+            basedpyright --version
+            command -v basedpyright-langserver >/dev/null
+            printf "%s\n" "basedpyright-langserver on PATH"
           '
 
           # OR-Tools: install it in a throwaway venv and solve a small CP-SAT
