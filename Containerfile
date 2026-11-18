@@ -90,16 +90,20 @@ RUN set -eux; \
       *) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
     esac; \
     base="https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}"; \
-    curl -fsSL -o /tmp/opencode.tar.gz "$base/opencode-linux-${asset}.tar.gz"; \
-    curl -fsSL -o /tmp/opencode-sums "$base/SHA256SUMS"; \
-    (cd /tmp && grep " opencode-linux-${asset}.tar.gz\$" opencode-sums | sha256sum -c -); \
-    tar -xzf /tmp/opencode.tar.gz -C /usr/local/bin opencode; \
-    rm -f /tmp/opencode.tar.gz /tmp/opencode-sums; \
+    file="opencode-linux-${asset}.tar.gz"; \
+    cd /tmp; \
+    curl -fsSL -O "$base/$file"; \
+    curl -fsSL -o SHA256SUMS "$base/SHA256SUMS"; \
+    grep " ${file}\$" SHA256SUMS | sha256sum -c -; \
+    tar -xzf "$file" -C /usr/local/bin opencode; \
+    rm -f "$file" SHA256SUMS; \
     ln -sf opencode /usr/local/bin/opencode2; \
     opencode --version
 
-# yq is not packaged by Debian (the `yq` package there is a different tool);
-# install the upstream static binary, also checksum-verified.
+# yq is not packaged by Debian stable (the `yq` package there is a different
+# tool; `yq-go` exists only in backports), so install the upstream static
+# binary. Its `checksums` asset lists many algorithms in the order given by
+# `checksums_hashes_order`; pick the SHA-256 column from those two files.
 RUN set -eux; \
     arch="$(dpkg --print-architecture)"; \
     case "$arch" in \
@@ -108,11 +112,18 @@ RUN set -eux; \
       *) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
     esac; \
     base="https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}"; \
-    curl -fsSL -o /tmp/yq "$base/yq_linux_${asset}"; \
-    curl -fsSL -o /tmp/yq-sums "$base/checksums"; \
-    (cd /tmp && grep " yq_linux_${asset}\$" yq-sums | sha256sum -c -); \
-    install -m 0755 /tmp/yq /usr/local/bin/yq; \
-    rm -f /tmp/yq /tmp/yq-sums; \
+    file="yq_linux_${asset}"; \
+    cd /tmp; \
+    curl -fsSL -O "$base/$file"; \
+    curl -fsSL -o yq-checksums "$base/checksums"; \
+    curl -fsSL -o yq-order "$base/checksums_hashes_order"; \
+    idx="$(grep -n '^SHA-256$' yq-order | cut -d: -f1)"; \
+    [ -n "$idx" ]; \
+    expected="$(grep "^${file} " yq-checksums | awk -v i="$((idx + 1))" '{print $i}')"; \
+    [ -n "$expected" ]; \
+    echo "$expected  $file" | sha256sum -c -; \
+    install -m 0755 "$file" /usr/local/bin/yq; \
+    rm -f "$file" yq-checksums yq-order; \
     yq --version
 
 # Non-root user, the directories the agent writes to, and a git safe.directory
