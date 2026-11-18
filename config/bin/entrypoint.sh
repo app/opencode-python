@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+#
+# Container entrypoint: prepares the runtime for OpenCode, starts in the
+# mounted project when there is exactly one, then execs the requested
+# command (default: the interactive TUI).
+#
+# Secrets are passed in through the environment (--env-file or a Kubernetes
+# Secret). This script never reads or writes a .env file; the runtime env
+# template is baked into the image at /home/opencode/.env.example for the
+# env-setup agent skill.
+
+set -euo pipefail
+
+# Keep the uv cache on the state volume: OR-Tools-sized wheels are otherwise
+# downloaded again on every fresh container. An explicit UV_CACHE_DIR wins.
+export UV_CACHE_DIR="${UV_CACHE_DIR:-${HOME:-/home/opencode}/.local/share/uv-cache}"
+
+# Git identity: environment variables take precedence over the gitconfig
+# baked into the image, so each user can set their own committer.
+export GIT_AUTHOR_NAME="${GIT_AUTHOR_NAME:-opencode-agent}"
+export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-agent@localhost}"
+export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-opencode-agent}"
+export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-agent@localhost}"
+
+# GitHub: when a token is provided, configure git to authenticate with it.
+# gh itself reads GH_TOKEN from the environment.
+if [[ -n "${GH_TOKEN:-}" ]]; then
+  gh auth setup-git
+fi
+
+# GitLab and Forgejo: optional forge tokens. When provided, each token is
+# stored as a git credential for its host (the scheme is taken from the
+# instance URL), so git over HTTPS/HTTP works without a password prompt.
+# GITLAB_TOKEN defaults to gitlab.com; FORGEJO_TOKEN is only used together
+# with FORGEJO_URL.
+if [[ -n "${GITLAB_TOKEN:-}" || -n "${FORGEJO_TOKEN:-}${FORGEJO_URL:-}" ]]; then
+  {
+    if [[ -n "${GITLAB_TOKEN:-}" ]]; then
+      url="${GITLAB_URL:-https://gitlab.com}"
+      rest="${url#*://}"
+      printf '%s://oauth2:%s@%s\n' "${url%%://*}" "$GITLAB_TOKEN" "${rest%%/*}"
+    fi
+    if [[ -n "${FORGEJO_TOKEN:-}" && -n "${FORGEJO_URL:-}" ]]; then
+      rest="${FORGEJO_URL#*://}"
+      printf '%s://git:%s@%s\n' "${FORGEJO_URL%%://*}" "$FORGEJO_TOKEN" "${rest%%/*}"
+    fi
+  } >"${HOME}/.git-credentials"
+  chmod 600 "${HOME}/.git-credentials"
+  git config --global credential.helper store
+fi
+
+# OpenCode works in the current directory. When exactly one project is
+# mounted under /home/opencode/projects, start inside it so the TUI opens the
+# project directly. With zero or several mounts the workspace stays the
+# projects root; open a specific project by passing the directory to opencode,
+# for example `opencode /home/opencode/projects/frontend`.
+shopt -s nullglob
+projects=("/home/opencode/projects"/*)
+shopt -u nullglob
+if [[ ${#projects[@]} -eq 1 && -d "${projects[0]}" ]]; then
+  cd "${projects[0]}"
+fi
+
+exec "$@"

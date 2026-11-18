@@ -1,0 +1,34 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // The binary is baked into the image and cannot update itself here.
+  // Updates ship with a rebuilt image; see docs/updating.md.
+  "update": "disable",
+  // No model or provider is pinned. Signed out, OpenCode serves its free
+  // built-in models (provider "opencode") with no account or key, and the
+  // TUI starts on one of them. Once the user connects OpenRouter
+  // (OPENROUTER_API_KEY or `opencode auth login openrouter`), the OpenRouter
+  // catalog appears and the user picks a model in the TUI; the pick is
+  // remembered on the state volume.
+  // Autonomous operation: the agent works without a human answering
+  // permission prompts. The built-in base policy already allows everything;
+  // these rules make the intent explicit and pin it against future default
+  // changes. V2 action names: shell (not bash), edit, webfetch.
+  "permissions": [
+    { "action": "edit", "resource": "*", "effect": "allow" },
+    { "action": "shell", "resource": "*", "effect": "allow" },
+    { "action": "webfetch", "resource": "*", "effect": "allow" }
+  ],
+  // Python language servers for the mounted project. basedpyright provides
+  // types, completion and navigation; ruff provides lint and format
+  // diagnostics. Both are baked into the image.
+  "lsp": {
+    "python": {
+      "command": ["basedpyright-langserver", "--stdio"],
+      "extensions": [".py", ".pyi"]
+    },
+    "ruff": {
+      "command": ["ruff", "server"],
+      "extensions": [".py", ".pyi"]
+    }
+  }
+}
