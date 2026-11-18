@@ -95,8 +95,8 @@ Common errors and fixes.
   `uv python install 3.12` pre-installs one.
 - `command not found: ruff` (or `mypy`, `py-spy`, ...): the baked tools live in
   `/opt/uv/bin`, and user-installed ones in `$HOME/.local/bin` (on the state
-  volume). Use `uv tool list` to see both, and `uv tool install <tool>` to add
-  one.
+  volume). `uv tool list` shows only the user-installed tools; the baked
+  executables are in `/opt/uv/bin`. `uv tool install <tool>` adds one.
 
 ## Apple Silicon and arm64
 

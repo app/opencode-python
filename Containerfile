@@ -172,7 +172,7 @@ RUN set -eux; \
         uv tool install --python /usr/local/bin/python3.14 "$tool"; \
     done; \
     [ -x /opt/uv/bin/sg ] || ln -s ast-grep /opt/uv/bin/sg; \
-    uv tool list; \
+    UV_TOOL_DIR=/opt/uv/tools UV_TOOL_BIN_DIR=/opt/uv/bin uv tool list; \
     rm -rf /home/opencode/.cache/uv
 
 # Bake the OpenCode configuration into the image. Secrets are not stored here:

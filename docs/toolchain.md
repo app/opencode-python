@@ -60,8 +60,9 @@ uvx ruff check .
   entrypoint, which sits on the state volume, so large wheels such as OR-Tools
   are not downloaded again on every run.
 - `uv tool install <tool>` adds a tool for the current user under
-  `$HOME/.local` (also on the state volume) and puts it first on the `PATH`;
-  `uv tool list` shows the baked and the user-installed tools.
+  `$HOME/.local` (also on the state volume) and puts it first on the `PATH`.
+  `uv tool list` shows those user-installed tools; the baked tools are in
+  `/opt/uv/tools` and their executables in `/opt/uv/bin`.
 
 ## Lint, types, tests
 
