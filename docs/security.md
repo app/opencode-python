@@ -40,8 +40,9 @@
 - The state volume (`/home/opencode/.local`) holds provider credentials, the
   session database, the uv cache and any extra Python interpreters; treat it as
   sensitive.
-- Never commit a `.env` file. The `env-setup` skill keeps the agent from writing
-  secrets into the repository and reminds about `chmod 600`.
+- Never commit a `.env` file. The `env-setup` skill offers to copy the template
+  into the working folder when runtime variables are missing, keeps the agent
+  from writing secrets into the repository and reminds about `chmod 600`.
 
 ## Network
 
