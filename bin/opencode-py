@@ -201,7 +201,7 @@ if [[ -n "${OPENCODE_PY_RUN_ARGS:-}" ]]; then
 fi
 
 exec "$ENGINE" run --interactive --tty --rm \
-  --name "opencode-py-${PROJECT_NAME}-$$" \
+  --name "opencode-$$" \
   --init \
   --detach-keys "ctrl-],ctrl-q" \
   ${ENGINE_ARGS[@]+"${ENGINE_ARGS[@]}"} \
