@@ -31,6 +31,10 @@ All project work is plan-driven:
 - The plan always ends with a mandatory `## Done / Next steps` section listing
   the completed points and what to do next. Update it in every session,
   regularly, before returning to wait for the user's prompt.
+- When a plan is fully complete, archive it before the next plan takes its
+  place: copy it to `./tmp/plan-archive-<YYYYMMDD>.md` (the archiving date;
+  append a distinguishing suffix if several plans are archived on the same
+  day). Archived plans are reference material and are never edited.
 - At the start of a session, always check whether a plan exists. If it does,
   ask the user for permission before continuing work on it.
 
