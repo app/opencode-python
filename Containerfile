@@ -166,11 +166,13 @@ ENV HOME=/home/opencode \
 # installed into isolated environments under /opt/uv/tools, with their
 # executables in /opt/uv/bin (both writable by the container user, so runtime
 # `uv tool` calls work too). The uv cache is removed: it lives outside the
-# mounted state volume and would only bloat the image.
+# mounted state volume and would only bloat the image. uv wants an interpreter
+# path, and the official image ships the minor binary (python3.12), not a
+# per-patch one, so the path is derived from the build arg.
 RUN set -eux; \
     for tool in ruff basedpyright mypy pytest pre-commit py-spy ast-grep-cli; do \
       UV_TOOL_DIR=/opt/uv/tools UV_TOOL_BIN_DIR=/opt/uv/bin \
-        uv tool install --python /usr/local/bin/python3.14 "$tool"; \
+        uv tool install --python "/usr/local/bin/python${PYTHON_VERSION%.*}" "$tool"; \
     done; \
     [ -x /opt/uv/bin/sg ] || ln -s ast-grep /opt/uv/bin/sg; \
     UV_TOOL_DIR=/opt/uv/tools UV_TOOL_BIN_DIR=/opt/uv/bin uv tool list; \
