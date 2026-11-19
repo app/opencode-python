@@ -150,7 +150,7 @@ plain `run` equivalent shown in [Usage](usage.md).
 
 The image is published to GHCR by the GitHub Actions workflow. Tags:
 `latest`, `oc-<opencode-version>-py<python-version>` (the exact toolchain
-combination, for example `oc-2.3.2-py3.14.10`) and `<YYYYMMDD>` (build date).
+combination, for example `oc-2.3.2-py3.12.16`) and `<YYYYMMDD>` (build date).
 See [Updating](updating.md) for how versions are chosen.
 
 ## Uninstall

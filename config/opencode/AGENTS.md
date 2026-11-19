@@ -25,8 +25,9 @@ alternatives.
   `uv`.
 - Python versions: `uv python install 3.12` (or another version) and a
   `.python-version` file in the project. The interpreter baked into the image is
-  the newest CPython that OR-Tools publishes wheels for; do not raise the
-  project's Python requirement beyond it.
+  CPython 3.12: OR-Tools ships `cp312` wheels for it and the optimization
+  project targets that minor. Do not raise the project's Python requirement
+  without checking that OR-Tools publishes a wheel for the new minor.
 - Lint and format: `ruff check`, `ruff format`. Types: `mypy`. Tests: `pytest`.
 - Hooks: `pre-commit`.
 - Profiling: `py-spy` (`py-spy top`, `py-spy record -o profile.svg -- python

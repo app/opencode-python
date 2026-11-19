@@ -6,7 +6,7 @@ building extensions.
 
 | Area      | Tools                                                                                                      |
 | --------- | ---------------------------------------------------------------------------------------------------------- |
-| Python    | CPython (`python`, `python3`, `python3.14`), `uv`                                                          |
+| Python    | CPython (`python`, `python3`, `python3.12`), `uv`                                                          |
 | Quality   | `ruff` (lint and format), `basedpyright`, `mypy`, `pytest`, `pre-commit`                                   |
 | Profiling | `py-spy`                                                                                                   |
 | Search    | `rg` (ripgrep), `fd`, `ast-grep` (`sg`)                                                                    |
@@ -24,17 +24,18 @@ most of the numerical Python ecosystem publish `manylinux` wheels only — see
 
 The image is built on the official `python:<version>-slim` image, so the
 interpreter is the Debian-friendly upstream CPython build at `/usr/local`, and
-`python`, `python3` and `python3.14` point at it:
+`python`, `python3` and `python3.12` point at it:
 
 ```bash
 python -V                    # the CPython pinned at build time
 uv --version
 ```
 
-The pinned version is the newest CPython that OR-Tools ships wheels for
-(recorded in `versions.json` and in the image labels). A project that needs
-another version declares it in `.python-version` (or `requires-python`, which
-`uv` honors); `uv` downloads that interpreter into the state volume on demand:
+The pinned version is CPython 3.12, the minor the optimization project targets
+and the one OR-Tools ships `cp312` wheels for (recorded in `versions.json` and
+in the image labels). A project that needs another version declares it in
+`.python-version` (or `requires-python`, which `uv` honors); `uv` downloads that
+interpreter into the state volume on demand:
 
 ```bash
 uv python install 3.12

@@ -55,9 +55,10 @@ connect OpenRouter with the TUI's `/connect` command. See
 
 - **Rolling latest.** GitHub Actions builds and publishes the image to GHCR on
   every push and on a daily schedule (06:17 UTC), with the current upstream
-  OpenCode, the newest CPython that OR-Tools supports, and the current yq. The
-  schedule also compares the resolved versions with `versions.json` and opens a
-  pull request when they differ — see [Updating](docs/updating.md).
+  OpenCode, CPython 3.12 (the project's interpreter, wheel-checked against
+  OR-Tools), and the current yq. The schedule also compares the resolved
+  versions with `versions.json` and opens a pull request when they differ — see
+  [Updating](docs/updating.md).
 - **Python toolchain.** CPython on Debian, `uv` for environments and tools,
   `ruff`, `basedpyright`, `mypy`, `pytest`, `pre-commit`, `py-spy`,
   `ast-grep`, plus git, `gh`, `glab` and the usual agent tooling — see

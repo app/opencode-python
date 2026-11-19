@@ -13,10 +13,12 @@ size the container, and what to do when a solver run needs more.
   publishes `manylinux_2_28` wheels for CPython 3.9 and newer on `x86_64` and
   `aarch64`, and publishes **no musllinux wheel and no source distribution**, so
   an Alpine image could not install it at all.
-- The Python minor is chosen from the OR-Tools release: `resolve-versions.sh`
-  reads the `cp3XY` wheel tags of the newest `ortools` and builds the image on
-  the newest `python:3.X.Y-slim` for that minor. Today that is CPython 3.14 and
-  OR-Tools 9.15.
+- The Python minor is fixed at 3.12, the interpreter the optimization project
+  targets: `resolve-versions.sh` builds the image on the newest
+  `python:3.12.Y-slim` and verifies that the newest `ortools` still publishes a
+  `cp312` wheel (OR-Tools has no source distribution). The 3.13/3.14 wheels are
+  not used: OR-Tools 9.15 crashes intermittently in multi-threaded CP-SAT there
+  ([google/or-tools#5025](https://github.com/google/or-tools/issues/5025)).
 - The CI smoke test installs OR-Tools in a throwaway environment and solves a
   small CP-SAT model on `linux/amd64` **and** `linux/arm64`, which is exactly
   what Apple Silicon users get.

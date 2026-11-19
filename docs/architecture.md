@@ -91,8 +91,8 @@ on demand (`workflow_dispatch`):
 
 1. **resolve** — `scripts/resolve-versions.sh` resolves the newest stable
    OpenCode release, the newest OR-Tools release, the newest yq release, and the
-   CPython minor that OR-Tools supports, then the newest
-   `python:3.<minor>.<patch>-slim` tag for it.
+   newest `python:3.12.<patch>-slim` tag, after checking that the OR-Tools
+   release still ships a `cp312` wheel.
 2. **build** — a matrix on native runners (`ubuntu-26.04` for amd64,
    `ubuntu-26.04-arm` for arm64) builds and pushes each architecture by digest,
    with a per-architecture registry cache. Each job pulls its own digest and

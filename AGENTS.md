@@ -33,12 +33,14 @@ before committing; it pads tables so they stay aligned in a terminal.
 ## Rules
 
 - **Versions are never hardcoded** in the `Containerfile` or the workflow.
-  `scripts/resolve-versions.sh` resolves OpenCode, OR-Tools, the newest CPython
-  that OR-Tools supports, and yq at CI time; `versions.json` is the pinned
-  record and is updated only by the `update-pins` bot PR.
-- **OR-Tools bounds Python.** The CPython minor is derived from the `cp3XY`
-  wheels of the newest `ortools` release. Never bump Python past what OR-Tools
-  ships wheels for: there is no sdist to fall back to.
+  `scripts/resolve-versions.sh` resolves OpenCode, OR-Tools, CPython 3.12, and
+  yq at CI time; `versions.json` is the pinned record and is updated only by the
+  `update-pins` bot PR.
+- **Python is fixed at 3.12.** That is the interpreter of the optimization
+  project (PyCharm virtual environment), and the script only verifies that the
+  newest `ortools` still ships a `cp312` wheel: there is no sdist to fall back
+  to. Do not follow the newest minor OR-Tools supports, because its 3.13/3.14
+  wheels have a known intermittent CP-SAT crash (google/or-tools#5025).
 - **Secrets are host-side only.** Never commit a `.env` file, never print or
   echo tokens. `.env.example` is the template; it is baked into the image at
   `/home/opencode/.env.example` for the `env-setup` agent skill.

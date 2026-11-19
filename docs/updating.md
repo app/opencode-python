@@ -10,10 +10,13 @@ to update on the host:
 - **OpenCode**: the newest non-prerelease release tag of `anomalyco/opencode`
   from the GitHub releases API.
 - **OR-Tools**: the newest release on PyPI.
-- **Python**: the newest `python:3.<minor>.<patch>-slim` tag on Docker Hub for
-  the newest CPython minor that has an OR-Tools wheel (free-threaded `cp3XYt`
-  wheels are ignored). This bound matters: OR-Tools ships no source
-  distribution, so a Python new enough to have no wheel cannot be used.
+- **Python**: the newest `python:3.12.<patch>-slim` tag on Docker Hub. The
+  minor is fixed at 3.12, the interpreter the optimization project targets
+  (PyCharm virtual environment); the script verifies that the newest OR-Tools
+  release still publishes a `cp312` wheel, because OR-Tools ships no source
+  distribution. The 3.13/3.14 wheels are not used: OR-Tools 9.15 has a known
+  intermittent CP-SAT crash there
+  ([google/or-tools#5025](https://github.com/google/or-tools/issues/5025)).
 - **yq**: the newest mikefarah/yq release, downloaded from GitHub for the target
   architecture.
 - **uv and the Debian packages** (`ruff` comes from `uv tool`, `gh`, `glab`,
@@ -46,7 +49,7 @@ branch is written by CI only; do not edit it by hand.
 Run the version that was current when you read the docs, or pin:
 
 ```bash
-docker pull ghcr.io/app/opencode-python:oc-2.3.2-py3.14.10
+docker pull ghcr.io/app/opencode-python:oc-2.3.2-py3.12.16
 ```
 
 `docker image inspect` prints the pinned versions from the image labels
@@ -69,7 +72,7 @@ matching builder; the CI matrix uses native runners):
 ```bash
 docker build \
   --build-arg OPENCODE_VERSION=2.3.2 \
-  --build-arg PYTHON_VERSION=3.14.10 \
+  --build-arg PYTHON_VERSION=3.12.16 \
   --build-arg YQ_VERSION=4.54.3 \
   -t opencode-python:local .
 ```

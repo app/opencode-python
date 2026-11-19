@@ -277,7 +277,7 @@ jobs:
             republishes the image with the new versions.
 
             - OpenCode: `${{ needs.resolve.outputs.opencode }}`
-            - Python: `${{ needs.resolve.outputs.python }}` (bounded by OR-Tools)
+            - Python: `${{ needs.resolve.outputs.python }}` (project target, wheel-checked)
             - OR-Tools: `${{ needs.resolve.outputs.ortools }}`
             - yq: `${{ needs.resolve.outputs.yq }}`
 
