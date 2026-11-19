@@ -67,38 +67,13 @@ Common errors and fixes.
   is missing, the `env-setup` skill offers to copy the template from
   `/home/opencode/.env.example` into the working folder.
 
-## OR-Tools does not install or import
+## In-container problems
 
-- Install it in the project, not globally: `uv add ortools` (`uv run python -c
-"from ortools.sat.python import cp_model"` to check).
-- `No matching distribution found` for `ortools` on Alpine/musl: OR-Tools has
-  no musllinux wheel and no source distribution. This image is Debian-based for
-  that reason; if you built your own image on Alpine, switch the base.
-- A Python newer than OR-Tools supports has no wheel: stay on the image's
-  interpreter or a version OR-Tools publishes wheels for. See
-  [Optimization](optimization.md#what-is-guaranteed).
-- `ImportError: libgomp.so.1` or a similar shared-library error means a runtime
-  library is missing from a custom image; the published image installs
-  `libgomp1`, `libatomic1` and `libstdc++6`.
-- A protobuf conflict: OR-Tools pins `protobuf<6.34`; do not add a newer
-  protobuf to the same environment.
-
-## Python environments
-
-- `uv sync` recreates or updates `.venv` in the project; activate nothing,
-  use `uv run` or `.venv/bin/python`. Do not install into the system
-  interpreter with `pip`.
-- The venv or the uv cache is slow on macOS: the bind mount is the bottleneck.
-  Put the environment on the state volume with
-  `UV_PROJECT_ENVIRONMENT=/home/opencode/.local/share/venv`; the cache is
-  already redirected there by the entrypoint.
-- A project requesting another Python version: `uv` downloads it on demand into
-  the state volume. `uv python list` shows what is installed and available;
-  `uv python install 3.12` pre-installs one.
-- `command not found: ruff` (or `mypy`, `py-spy`, ...): the baked tools live in
-  `/opt/uv/bin`, and user-installed ones in `$HOME/.local/bin` (on the state
-  volume). `uv tool list` shows only the user-installed tools; the baked
-  executables are in `/opt/uv/bin`. `uv tool install <tool>` adds one.
+The agent inside the container follows its own guide, baked at
+`/home/opencode/.config/opencode/docs/` (source:
+[config/opencode/docs/](../config/opencode/docs/)): OR-Tools installs, protobuf
+conflicts, solver crashes and Python environments. Ask the agent, or read the
+guide in the repository.
 
 ## Apple Silicon and arm64
 

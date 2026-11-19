@@ -6,13 +6,13 @@ Running the OpenCode server in a cluster with the example manifests in
 ## Prerequisites
 
 - A Kubernetes cluster and `kubectl`.
-- A pull secret for GHCR (replace the placeholders):
+- A pull secret for GHCR (set `GHCR_USER` and `GHCR_TOKEN` in the shell first):
 
   ```bash
   kubectl create secret docker-registry ghcr-pull \
     --docker-server=https://ghcr.io \
-    --docker-username=<you> \
-    --docker-password=<ghcr-token>
+    --docker-username="$GHCR_USER" \
+    --docker-password="$GHCR_TOKEN"
   ```
 
 - A runtime `Secret` based on [k8s/secret.example.yaml](../k8s/secret.example.yaml)

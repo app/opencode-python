@@ -14,21 +14,35 @@
 - Keep changes consistent with the structure, naming and patterns of the
   surrounding code.
 
+## Documentation
+
+Detailed guides are baked next to this file. Read the one that matches the
+task before non-trivial work:
+
+- `/home/opencode/.config/opencode/docs/workspace.md` — where the project,
+  the state volume and the tools live.
+- `/home/opencode/.config/opencode/docs/python.md` — the CPython 3.12 policy,
+  uv workflows, lint/types/tests, native builds.
+- `/home/opencode/.config/opencode/docs/ortools.md` — OR-Tools install,
+  versions, CP-SAT, profiling.
+- `/home/opencode/.config/opencode/docs/troubleshooting.md` — in-container
+  failures and fixes.
+
 ## Tooling
 
 The image ships a Python development toolchain. Prefer these tools over ad-hoc
 alternatives.
 
-- Environments and packages: `uv`. Use `uv venv`, `uv add`, `uv sync`,
-  `uv pip`, `uvx` and `uv run`. Never install packages into the system
-  interpreter with `pip`; if a script needs an environment, create one with
-  `uv`.
-- Python versions: `uv python install 3.12` (or another version) and a
-  `.python-version` file in the project. The interpreter baked into the image is
-  CPython 3.12: OR-Tools ships `cp312` wheels for it and the optimization
-  project targets that minor. Do not raise the project's Python requirement
-  without checking that OR-Tools publishes a wheel for the new minor.
-- Lint and format: `ruff check`, `ruff format`. Types: `mypy`. Tests: `pytest`.
+- Environments and packages: `uv` (`uv venv`, `uv add`, `uv sync`, `uv run`,
+  `uvx`). Never install packages into the system interpreter with `pip`; if a
+  script needs an environment, create one with `uv`. Workflows:
+  `/home/opencode/.config/opencode/docs/python.md`.
+- Python versions: keep the project on CPython 3.12; a project that needs
+  another version declares it in `.python-version` and `uv` downloads it. Do
+  not raise the requirement past 3.12 (OR-Tools wheels and the CP-SAT crash,
+  see the Python guide).
+- Lint and format: `ruff check`, `ruff format`. Types: `mypy`. Tests:
+  `pytest`.
 - Hooks: `pre-commit`.
 - Profiling: `py-spy` (`py-spy top`, `py-spy record -o profile.svg -- python
 model.py`), including native OR-Tools calls.
@@ -41,9 +55,8 @@ model.py`), including native OR-Tools calls.
 - Native builds: `gcc`/`g++`, `make`, `pkg-config` and the development headers
   (`libssl-dev`, `libffi-dev`, `zlib1g-dev`, `libsqlite3-dev`) are available for
   C extensions.
-- Markdown: the repository CI checks formatting with `prettier`, which is not
-  installed here (it needs Node). Keep tables aligned by hand and do not
-  reformat whole files.
+- Markdown: when the project checks formatting with `prettier`, keep tables
+  aligned by hand and do not reformat whole files unless asked.
 
 ## OR-Tools
 
@@ -53,7 +66,8 @@ model.py`), including native OR-Tools calls.
 - OR-Tools pins `protobuf<6.34`; do not force a newer protobuf alongside it.
 - CP-SAT is CPU- and memory-hungry: give the container enough resources
   (`--cpus`, `--memory`) and tune `num_search_workers` in the solver
-  parameters.
+  parameters. A multi-worker crash in 9.15.6755 is a known upstream bug
+  (google/or-tools#5025); see the troubleshooting guide.
 - HiGHS (`uv add highspy`), PuLP and Pyomo are project dependencies too; only
   open-source solvers are supported out of the box (CP-SAT, GLOP, SCIP,
   HiGHS).
@@ -80,8 +94,8 @@ model.py`), including native OR-Tools calls.
 
 OpenCode is baked into the image; it cannot update itself inside the
 container. Never run `opencode upgrade` or edit the installed binary. Updates
-are published by the GitHub Actions workflow, so ask the user to pull a newer
-image when a newer OpenCode is needed.
+are published by the image build, so ask the user to pull a newer image when a
+newer OpenCode is needed.
 
 ## Models
 
@@ -146,7 +160,7 @@ Rules:
 - State the package and the reason before installing, and keep it minimal.
 - Runtime installs live in the writable layer and disappear when the container
   exits. If a tool is needed permanently, tell the user so it can be added to
-  the Containerfile.
+  the image.
 - After installing, verify with `command -v <tool>` and the tool's version.
 - Never use sudo to work around a permission error inside the project; fix the
   cause or ask the user.

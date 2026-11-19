@@ -74,7 +74,7 @@ connect OpenRouter with the TUI's `/connect` command. See
 - A human in the TUI — the image default, as in the quick start above.
 - A human in the web UI — server mode plus the pairing flow.
 - An external agent — server mode plus the HTTP API (Basic auth, username
-  `opencode`).
+  `opencode`); its entry point is [AGENTS.md](AGENTS.md).
 
 Server mode is an explicit command
 (`opencode serve --hostname 0.0.0.0 --port 4096`); see

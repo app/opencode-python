@@ -1,8 +1,10 @@
 # Optimization
 
-The image is built for Python developers who work on optimization with Google
-OR-Tools. This page covers what is guaranteed, how to start a project, how to
-size the container, and what to do when a solver run needs more.
+The image is built for optimization work with Google OR-Tools, whatever runs
+the session: the TUI, the web UI or an agent on the host over the HTTP API.
+This page covers what is guaranteed and how to size the container; the
+in-container workflow is written for the agent
+([config/opencode/docs/ortools.md](../config/opencode/docs/ortools.md)).
 
 ## What is guaranteed
 
@@ -23,34 +25,6 @@ size the container, and what to do when a solver run needs more.
   small CP-SAT model on `linux/amd64` **and** `linux/arm64`, which is exactly
   what Apple Silicon users get.
 
-## Quick start
-
-```bash
-cd /home/opencode/projects/<your-project>
-uv init
-uv add ortools
-uv run python - <<'PY'
-from ortools.sat.python import cp_model
-
-model = cp_model.CpModel()
-x = model.NewIntVar(0, 10, "x")
-y = model.NewIntVar(0, 10, "y")
-model.Add(x + 2 * y <= 14)
-model.Maximize(3 * x + 2 * y)
-
-solver = cp_model.CpSolver()
-solver.parameters.num_search_workers = 4
-print(solver.Solve(model), solver.Value(x), solver.Value(y))
-PY
-```
-
-A CP-SAT model over real data usually wants `pandas` (and `matplotlib` for
-plots); add them the same way:
-
-```bash
-uv add pandas matplotlib
-```
-
 ## Solvers
 
 | Solver      | Package                | Notes                                                  |
@@ -68,10 +42,11 @@ installed per project if you have them.
 ## Resources
 
 CP-SAT uses all visible cores by default and keeps a search tree in memory.
-Give the container room:
+Give the container room (run from the project directory):
 
 ```bash
-podman run -it --rm --cpus 4 --memory 8g \
+podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \
+  --cpus 4 --memory 8g \
   --name "opencode-$$" \
   -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
   -v opencode-python-state-$(id -un):/home/opencode/.local \
@@ -87,38 +62,11 @@ podman run -it --rm --cpus 4 --memory 8g \
 - With the [launcher](installation.md#the-launcher-optional), the same is
   `OPENCODE_PY_RUN_ARGS="--cpus 4 --memory 8g" opencode-py`.
 
-## Virtual environments
-
-`uv` creates `.venv` in the project by default. A virtual environment with
-OR-Tools is roughly 300 MB across thousands of files, which is slow on the
-bind mount of a macOS VM. On Apple Silicon, keep it on the state volume
-instead:
-
-```bash
-export UV_PROJECT_ENVIRONMENT=/home/opencode/.local/share/venv
-```
-
-The environment then lives next to the uv cache and survives container
-restarts. The trade-off is that host-side tooling cannot reuse it (`.pinned`
-and the lockfile in the project still define it).
-
-## Profiling
-
-`py-spy` profiles native frames, including OR-Tools solver calls, without
-changing the code:
-
-```bash
-py-spy top -- uv run python model.py
-py-spy record -o profile.svg -- uv run python model.py
-```
-
 ## Notes
 
 - OR-Tools pins `protobuf<6.34`; do not force a newer protobuf alongside it.
 - Solver output goes to stdout/stderr inside the container; keep
   `num_search_workers` reasonable when running in server mode so the TUI stays
   responsive.
-- Kernels and notebooks are not baked in. Add `jupyterlab` to the project
-  (`uv add jupyterlab`, then `uv run jupyter lab --ip=0.0.0.0 --no-browser`) if
-  you want them; publishing the port works the same way as the server mode in
-  [Usage](usage.md).
+- Kernels and notebooks are not baked in. Ask the agent to add `jupyterlab` to
+  the project and publish the port as in [Usage](usage.md) if you want them.

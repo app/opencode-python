@@ -71,9 +71,8 @@ Rosetta or QEMU.
   [Optimization](optimization.md#resources).
 - Enable virtiofs file sharing (Podman's default on current releases, Docker
   Desktop's "Virtualization framework" option). A Python virtual environment
-  with OR-Tools is large, so bind-mount performance matters; see
-  [Optimization](optimization.md#virtual-environments) for keeping the venv on
-  the state volume instead.
+  with OR-Tools is large, so bind-mount performance matters; the agent keeps
+  the environment on the state volume when the project needs it.
 
 ## More models (optional)
 
@@ -101,11 +100,16 @@ openrouter` in place of `auth login openrouter`.
 
 ### Option 2: environment file
 
-Keep the key on the host: put it in a `.env` file in the project folder — ask
-the agent to create it (it copies the template from the image into the current
-folder, which is on the host), or copy [.env.example](../.env.example) from the
-repository — fill in `OPENROUTER_API_KEY`, keep it private with `chmod 600
-.env`, add it to `.gitignore`, and pass it on the run command:
+Keep the key on the host — copy the template into the project folder and keep
+it private:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/app/opencode-python/main/.env.example -o .env
+chmod 600 .env
+```
+
+Fill in `OPENROUTER_API_KEY`, add `.env` to `.gitignore`, and pass the file on
+the run command:
 
 ```bash
 podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \

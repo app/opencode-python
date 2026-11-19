@@ -61,10 +61,14 @@ The same works with Docker (with `--user "$(id -u):$(id -g)"` instead of
 
 To open the [web UI](api.md#web-ui), create a pairing link from inside the
 running container:
-`podman exec -it --detach-keys="ctrl-],ctrl-q" <name> opencode pair`
-(`<name>` is the container name, see [Logs](#logs)), and open the printed
-link in a browser. The [HTTP API](api.md#http-api-agents) is available under
-Basic auth on the same port.
+
+```bash
+name="$(podman ps --format '{{.Names}}' | grep '^opencode-' | head -n1)"
+podman exec -it --detach-keys="ctrl-],ctrl-q" "$name" opencode pair
+```
+
+Open the printed link in a browser. The [HTTP API](api.md#http-api-agents) is
+available under Basic auth on the same port.
 
 ## Mounts
 
@@ -100,7 +104,13 @@ need headroom. Pass engine limits on the run command (or through
 `OPENCODE_PY_RUN_ARGS` with the launcher):
 
 ```bash
-podman run -it --rm --cpus 4 --memory 8g ...
+podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \
+  --cpus 4 --memory 8g \
+  --name "opencode-$$" \
+  -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
+  -v opencode-python-state-$(id -un):/home/opencode/.local \
+  --detach-keys="ctrl-],ctrl-q" \
+  ghcr.io/app/opencode-python:latest
 ```
 
 CP-SAT uses all apparent cores by default; set
@@ -109,12 +119,20 @@ See [Optimization](optimization.md) for solver-specific advice.
 
 ## Passing secrets
 
-Secrets are never baked into the image; they are passed at runtime:
+Secrets are never baked into the image; they are passed at runtime, as a file
+with one `NAME=value` line per variable:
 
 ```bash
---env-file path/to/env            # one NAME=value per line
--e OPENROUTER_API_KEY=...         # or individual variables
+podman run -it --rm --userns=keep-id:uid=1000,gid=1000 \
+  --name "opencode-$$" \
+  -v "$PWD:/home/opencode/projects/$(basename "$PWD")" \
+  -v opencode-python-state-$(id -un):/home/opencode/.local \
+  --detach-keys="ctrl-],ctrl-q" \
+  --env-file .env \
+  ghcr.io/app/opencode-python:latest
 ```
+
+For a single variable, replace `--env-file .env` with `-e NAME=value`.
 
 The OpenRouter key is optional (the free built-in models need no key); to
 connect, use the TUI's `/connect` command (see
@@ -169,5 +187,12 @@ The container name (and its published ports) is shown by:
 podman ps --format "table {{.ID}}\t{{.Status}}\t{{.Names}}\t{{.Ports}}" | grep opencode
 ```
 
-The log is read with `podman logs -f <name>`. In server mode, the generated
-server password (when `OPENCODE_PASSWORD` is empty) is printed there on start.
+The log is read with:
+
+```bash
+name="$(podman ps --format '{{.Names}}' | grep '^opencode-' | head -n1)"
+podman logs -f "$name"
+```
+
+In server mode, the generated server password (when `OPENCODE_PASSWORD` is
+empty) is printed there on start.

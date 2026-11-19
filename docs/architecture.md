@@ -6,13 +6,14 @@ Repository layout, the image, and the GitHub Actions pipeline.
 
 ```text
 .
-├── AGENTS.md                         # instructions for agents working on this repository
+├── AGENTS.md                         # entry point for agents on a host: install/run, HTTP API, repository work
 ├── bin/opencode-py                   # launcher: thin wrapper over podman/docker
 ├── Containerfile                     # OpenCode + Python/OR-Tools toolchain, built-in non-root user (uid 1000)
 ├── .env.example                      # runtime env template (copied into the image)
 ├── versions.json                     # pinned versions (updated by the bot PR)
 ├── .github/workflows/build.yml       # multi-arch build, publish, smoke test, pin updates
 ├── scripts/
+│   ├── check-docs.sh                 # checks the consumer doc examples and the canonical API block
 │   ├── resolve-versions.sh           # resolves OpenCode, OR-Tools, Python and yq
 │   └── smoke-ortools.py              # CP-SAT smoke test run by CI
 ├── config/
@@ -21,13 +22,14 @@ Repository layout, the image, and the GitHub Actions pipeline.
 │   ├── sudoers.d/opencode            # passwordless sudo policy (any user in the container)
 │   └── opencode/                     # copied to /home/opencode/.config/opencode
 │       ├── opencode.jsonc            # permissions, LSP (no model or provider pinned)
-│       ├── AGENTS.md                 # agent instructions (public, no personal data)
+│       ├── AGENTS.md                 # in-container agent instructions (public, no personal data)
+│       ├── docs/                     # in-container guides: workspace, Python/uv, OR-Tools, troubleshooting
 │       └── skills/env-setup/SKILL.md # offers the env template when runtime variables are missing
 ├── k8s/
 │   ├── deployment.yaml
 │   ├── service.yaml
 │   └── secret.example.yaml
-├── docs/                             # detailed documentation
+├── docs/                             # reference documentation for container users (host-side examples)
 └── README.md
 ```
 
@@ -46,8 +48,8 @@ no musllinux wheel and no source distribution:
 | matplotlib                   | no (aarch64)     | yes             |
 | **ortools**                  | **no, no sdist** | yes             |
 
-That is also why the Python minor follows OR-Tools: there is no fallback build
-path.
+That is also why Python stays on the 3.12 line OR-Tools supports: there is no
+fallback build path.
 
 ## Image
 
@@ -92,7 +94,9 @@ on demand (`workflow_dispatch`):
 1. **resolve** — `scripts/resolve-versions.sh` resolves the newest stable
    OpenCode release, the newest OR-Tools release, the newest yq release, and the
    newest `python:3.12.<patch>-slim` tag, after checking that the OR-Tools
-   release still ships a `cp312` wheel.
+   release still ships a `cp312` wheel. The job also runs
+   `scripts/check-docs.sh`, which checks the consumer doc examples and keeps
+   the canonical API block in `AGENTS.md` and `docs/api.md` identical.
 2. **build** — a matrix on native runners (`ubuntu-26.04` for amd64,
    `ubuntu-26.04-arm` for arm64) builds and pushes each architecture by digest,
    with a per-architecture registry cache. Each job pulls its own digest and
