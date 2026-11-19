@@ -125,6 +125,10 @@ jobs:
             basedpyright --version
             command -v basedpyright-langserver >/dev/null
             printf "%s\n" "basedpyright-langserver on PATH"
+            for guide in workspace python ortools troubleshooting; do
+              test -f "/home/opencode/.config/opencode/docs/${guide}.md"
+            done
+            printf "%s\n" "agent guides baked"
           '
 
           # OR-Tools: install it in a throwaway venv and solve a small CP-SAT
