@@ -20,6 +20,8 @@ All project work is plan-driven:
 
 - The plan lives in the temporary file `./tmp/PLAN.md`. For large or complex
   projects the plan may be kept under git control as `docs/PLAN.md` instead.
+- The plan is written in the language the user writes in (the conversation
+  language); this file and the guides stay in English.
 - If no plan exists, always propose starting by writing one.
 - No mutating actions of any kind may start until the user explicitly confirms
   that the plan is ready and work may begin. Until then only read-only actions
