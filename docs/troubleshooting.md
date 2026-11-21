@@ -92,7 +92,7 @@ guide in the repository.
 
 - Git over HTTPS authenticates through the baked-in credential helpers from
   the tokens in the container environment: `GH_TOKEN` or `GITHUB_TOKEN`
-  (GitHub), `GITLAB_TOKEN` (+ `GITLAB_URL`) and `FORGEJO_TOKEN`
+  (GitHub), `GITLAB_TOKEN` (+ `GITLAB_HOST`) and `FORGEJO_TOKEN`
   (+ `FORGEJO_URL`). Check that the token for the host you push to is set.
 - Commits are signed with the `GIT_AUTHOR_*` / `GIT_COMMITTER_*` variables or
   the baked generic identity; set the variables in the env file.

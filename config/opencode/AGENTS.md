@@ -109,10 +109,11 @@ model.py`), including native OR-Tools calls.
   `GITHUB_TOKEN`). Use `gh` for issues, pull requests and releases; it reads
   `GH_TOKEN` from the environment.
 - GitLab (optional): when `GITLAB_TOKEN` is set, git over HTTPS to the GitLab
-  host (`GITLAB_URL`, default `https://gitlab.com`) is authenticated by the
+  host (`GITLAB_HOST`, default `https://gitlab.com`) is authenticated by the
   `git-credential-gitlab` helper. Use `glab` for issues, MRs, pipelines and
-  releases (it reads `GITLAB_TOKEN`; pass `--hostname` for self-hosted
-  instances) or the REST API with the `PRIVATE-TOKEN` header.
+  releases (it reads `GITLAB_TOKEN` and `GITLAB_HOST`, so a self-hosted
+  instance is picked up automatically) or the REST API with the
+  `PRIVATE-TOKEN` header.
 - Forgejo (optional): when `FORGEJO_TOKEN` and `FORGEJO_URL` are set, git over
   HTTPS/HTTP to that instance is authenticated by the
   `git-credential-forgejo` helper. Use the REST API

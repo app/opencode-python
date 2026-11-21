@@ -20,7 +20,7 @@ Repository layout, the image, and the GitHub Actions pipeline.
 │   ├── bin/
 │   │   ├── entrypoint.sh             # git identity, uv cache, cd into the project, exec "$@"
 │   │   ├── git-credential-github     # https://github.com, from GH_TOKEN or GITHUB_TOKEN
-│   │   ├── git-credential-gitlab     # gitlab.com / the GITLAB_URL host, from GITLAB_TOKEN
+│   │   ├── git-credential-gitlab     # gitlab.com / the GITLAB_HOST host, from GITLAB_TOKEN
 │   │   └── git-credential-forgejo    # the FORGEJO_URL host, from FORGEJO_TOKEN
 │   ├── gitconfig                     # generic gitconfig for the non-root user (identity, credential helpers)
 │   ├── sudoers.d/opencode            # passwordless sudo policy (any user in the container)

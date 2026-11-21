@@ -67,7 +67,7 @@ env | grep -E '^(OPENROUTER_API_KEY|OPENCODE_PASSWORD|GH_TOKEN|GITHUB_TOKEN|GITL
 | `GH_TOKEN`                                   | GitHub token for git over HTTPS and the `gh` CLI. Optional.                                                                              |
 | `GITHUB_TOKEN`                               | GitHub token for git over HTTPS and the `gh` CLI, used when `GH_TOKEN` is empty. Optional.                                               |
 | `GITLAB_TOKEN`                               | GitLab token for git over HTTPS, the `glab` CLI and API calls. Optional.                                                                 |
-| `GITLAB_URL`                                 | Self-hosted GitLab host (default `https://gitlab.com`). Optional.                                                                        |
+| `GITLAB_HOST`                                | Self-hosted GitLab host (default `https://gitlab.com`); read by glab natively. Optional.                                                 |
 | `FORGEJO_URL`                                | Forgejo/Gitea instance URL; required for `FORGEJO_TOKEN`. Optional.                                                                      |
 | `FORGEJO_TOKEN`                              | Forgejo/Gitea token for git and the REST API. Optional.                                                                                  |
 | `UV_INDEX_URL`                               | Private package index for `uv` (may contain a token in the URL). Optional.                                                               |

@@ -11,7 +11,7 @@
 [credential]
   # The helpers installed in /usr/local/bin answer only for their own host:
   # git-credential-github for https://github.com, git-credential-gitlab for
-  # https://gitlab.com plus the host from GITLAB_URL, and
+  # https://gitlab.com plus the host from GITLAB_HOST, and
   # git-credential-forgejo for the host from FORGEJO_URL. Each stays silent
   # when its token is not in the environment, so a token is never offered to
   # any other remote.

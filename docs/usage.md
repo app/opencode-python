@@ -156,19 +156,19 @@ template documenting every variable lives in the repository root
 (`.env.example`) and inside the image at `/home/opencode/.env.example`.
 Variable reference:
 
-| Variable                                     | Required         | Purpose                                                              |
-| -------------------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| `OPENROUTER_API_KEY`                         | no               | API key for OpenRouter models; the free built-in models need no key  |
-| `OPENCODE_PASSWORD`                          | no (server mode) | server password; when empty, one is generated and printed to the log |
-| `GH_TOKEN`                                   | no               | GitHub token for git over HTTPS and the `gh` CLI                     |
-| `GITHUB_TOKEN`                               | no               | GitHub token for git and the `gh` CLI, used when `GH_TOKEN` is empty |
-| `GITLAB_TOKEN`                               | no               | GitLab token for git, the `glab` CLI and the API                     |
-| `GITLAB_URL`                                 | no               | self-hosted GitLab host (default `https://gitlab.com`)               |
-| `FORGEJO_URL`                                | no               | Forgejo/Gitea instance URL, required for `FORGEJO_TOKEN`             |
-| `FORGEJO_TOKEN`                              | no               | Forgejo token for git and the REST API                               |
-| `UV_INDEX_URL`                               | no               | private Python package index for `uv` (token may be in the URL)      |
-| `GIT_AUTHOR_NAME` / `GIT_AUTHOR_EMAIL`       | no               | author identity for commits                                          |
-| `GIT_COMMITTER_NAME` / `GIT_COMMITTER_EMAIL` | no               | committer identity for commits                                       |
+| Variable                                     | Required         | Purpose                                                               |
+| -------------------------------------------- | ---------------- | --------------------------------------------------------------------- |
+| `OPENROUTER_API_KEY`                         | no               | API key for OpenRouter models; the free built-in models need no key   |
+| `OPENCODE_PASSWORD`                          | no (server mode) | server password; when empty, one is generated and printed to the log  |
+| `GH_TOKEN`                                   | no               | GitHub token for git over HTTPS and the `gh` CLI                      |
+| `GITHUB_TOKEN`                               | no               | GitHub token for git and the `gh` CLI, used when `GH_TOKEN` is empty  |
+| `GITLAB_TOKEN`                               | no               | GitLab token for git, the `glab` CLI and the API                      |
+| `GITLAB_HOST`                                | no               | self-hosted GitLab host (default `https://gitlab.com`), glab reads it |
+| `FORGEJO_URL`                                | no               | Forgejo/Gitea instance URL, required for `FORGEJO_TOKEN`              |
+| `FORGEJO_TOKEN`                              | no               | Forgejo token for git and the REST API                                |
+| `UV_INDEX_URL`                               | no               | private Python package index for `uv` (token may be in the URL)       |
+| `GIT_AUTHOR_NAME` / `GIT_AUTHOR_EMAIL`       | no               | author identity for commits                                           |
+| `GIT_COMMITTER_NAME` / `GIT_COMMITTER_EMAIL` | no               | committer identity for commits                                        |
 
 When a forge token is set, the baked-in git credential helpers authenticate
 git for the matching host without a password prompt; without a token they
