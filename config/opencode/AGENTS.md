@@ -100,19 +100,25 @@ model.py`), including native OR-Tools calls.
 
 - Commits use `GIT_AUTHOR_*` and `GIT_COMMITTER_*` when they are set. Do not
   change the git identity in the repository or in the global config.
-- GitHub: git over HTTPS uses the `gh` credential helper, which the entrypoint
-  configures from `GH_TOKEN`. Use `gh` for issues, pull requests and releases;
-  it reads `GH_TOKEN` from the environment.
+- Forge tokens in the environment (`GH_TOKEN` or `GITHUB_TOKEN`,
+  `GITLAB_TOKEN`, `FORGEJO_TOKEN`) authenticate git through the baked-in
+  credential helpers (`/usr/local/bin/git-credential-*`, enabled in the global
+  gitconfig); each helper answers only for its own host and stays silent
+  without its token.
+- GitHub: git over HTTPS to github.com authenticates with `GH_TOKEN` (or
+  `GITHUB_TOKEN`). Use `gh` for issues, pull requests and releases; it reads
+  `GH_TOKEN` from the environment.
 - GitLab (optional): when `GITLAB_TOKEN` is set, git over HTTPS to the GitLab
-  host (`GITLAB_URL`, default `https://gitlab.com`) is preconfigured by the
-  entrypoint. Use `glab` for issues, MRs, pipelines and releases (it reads
-  `GITLAB_TOKEN`; pass `--hostname` for self-hosted instances) or the REST API
-  with the `PRIVATE-TOKEN` header.
+  host (`GITLAB_URL`, default `https://gitlab.com`) is authenticated by the
+  `git-credential-gitlab` helper. Use `glab` for issues, MRs, pipelines and
+  releases (it reads `GITLAB_TOKEN`; pass `--hostname` for self-hosted
+  instances) or the REST API with the `PRIVATE-TOKEN` header.
 - Forgejo (optional): when `FORGEJO_TOKEN` and `FORGEJO_URL` are set, git over
-  HTTPS/HTTP to that instance is preconfigured by the entrypoint. Use the REST
-  API (`<FORGEJO_URL>/api/v1/...`) with the `Authorization: token` header.
-- Never print, log or commit `GH_TOKEN`, `GITLAB_TOKEN`, `FORGEJO_TOKEN` or
-  other credentials.
+  HTTPS/HTTP to that instance is authenticated by the
+  `git-credential-forgejo` helper. Use the REST API
+  (`<FORGEJO_URL>/api/v1/...`) with the `Authorization: token` header.
+- Never print, log or commit `GH_TOKEN`, `GITHUB_TOKEN`, `GITLAB_TOKEN`,
+  `FORGEJO_TOKEN` or other credentials.
 
 ## Container updates
 

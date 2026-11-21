@@ -17,8 +17,12 @@ Repository layout, the image, and the GitHub Actions pipeline.
 │   ├── resolve-versions.sh           # resolves OpenCode, OR-Tools, Python and yq
 │   └── smoke-ortools.py              # CP-SAT smoke test run by CI
 ├── config/
-│   ├── bin/entrypoint.sh             # git identity, forge credentials, uv cache, cd into the project, exec "$@"
-│   ├── gitconfig                     # generic gitconfig for the non-root user
+│   ├── bin/
+│   │   ├── entrypoint.sh             # git identity, uv cache, cd into the project, exec "$@"
+│   │   ├── git-credential-github     # https://github.com, from GH_TOKEN or GITHUB_TOKEN
+│   │   ├── git-credential-gitlab     # gitlab.com / the GITLAB_URL host, from GITLAB_TOKEN
+│   │   └── git-credential-forgejo    # the FORGEJO_URL host, from FORGEJO_TOKEN
+│   ├── gitconfig                     # generic gitconfig for the non-root user (identity, credential helpers)
 │   ├── sudoers.d/opencode            # passwordless sudo policy (any user in the container)
 │   └── opencode/                     # copied to /home/opencode/.config/opencode
 │       ├── opencode.jsonc            # permissions, LSP (no model or provider pinned)
@@ -72,12 +76,15 @@ The image bakes configuration, not secrets:
   permissions, the two Python language servers, the `env-setup` skill, the
   `AGENTS.md` policy; no model or provider is pinned — the session runs on
   OpenCode's free built-in models until the user connects OpenRouter);
-- `config/gitconfig` → `/home/opencode/.gitconfig` (generic identity);
+- `config/gitconfig` → `/home/opencode/.gitconfig` (generic identity, the
+  credential helpers);
 - `.env.example` → `/home/opencode/.env.example` (the runtime env template);
 - `config/bin/entrypoint.sh` → `/usr/local/bin/entrypoint.sh` (git identity
-  from the environment, forge git credentials from `GH_TOKEN`, `GITLAB_TOKEN`,
-  `FORGEJO_TOKEN` when set, the uv cache on the state volume, a `cd` into the
-  single mounted project, then `exec "$@"`).
+  from the environment, the uv cache on the state volume, a `cd` into the
+  single mounted project, then `exec "$@"`);
+- `config/bin/git-credential-*` → `/usr/local/bin/` (forge git authentication:
+  each helper answers only for its own host from the token in the environment
+  and stays silent without the token).
 
 The default command is the interactive TUI: `docker run -it ... image` opens a
 session with no OpenCode installation on the host, in the mounted project (the

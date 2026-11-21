@@ -29,7 +29,7 @@ restart. Use this skill for the remaining variables.
 List which variables are currently set:
 
 ```sh
-env | grep -E '^(OPENROUTER_API_KEY|OPENCODE_PASSWORD|GH_TOKEN|GITLAB_TOKEN|FORGEJO_TOKEN|UV_INDEX_URL)=' || true
+env | grep -E '^(OPENROUTER_API_KEY|OPENCODE_PASSWORD|GH_TOKEN|GITHUB_TOKEN|GITLAB_TOKEN|FORGEJO_TOKEN|UV_INDEX_URL)=' || true
 ```
 
 ## Actions
@@ -65,6 +65,7 @@ env | grep -E '^(OPENROUTER_API_KEY|OPENCODE_PASSWORD|GH_TOKEN|GITLAB_TOKEN|FORG
 | `OPENROUTER_API_KEY`                         | API key for OpenRouter models. Optional: the free built-in models work without it; the stored account wins over this variable.           |
 | `OPENCODE_PASSWORD`                          | Password for the OpenCode server (HTTP API). Optional: when empty, the server generates one and prints it to the container log on start. |
 | `GH_TOKEN`                                   | GitHub token for git over HTTPS and the `gh` CLI. Optional.                                                                              |
+| `GITHUB_TOKEN`                               | GitHub token for git over HTTPS and the `gh` CLI, used when `GH_TOKEN` is empty. Optional.                                               |
 | `GITLAB_TOKEN`                               | GitLab token for git over HTTPS, the `glab` CLI and API calls. Optional.                                                                 |
 | `GITLAB_URL`                                 | Self-hosted GitLab host (default `https://gitlab.com`). Optional.                                                                        |
 | `FORGEJO_URL`                                | Forgejo/Gitea instance URL; required for `FORGEJO_TOKEN`. Optional.                                                                      |

@@ -29,7 +29,7 @@
 #
 # Runtime secrets come from the env file; variables that are already set in
 # the calling shell (OPENROUTER_API_KEY, OPENCODE_PASSWORD, GH_TOKEN,
-# GITLAB_TOKEN, FORGEJO_TOKEN, UV_INDEX_URL, GIT_AUTHOR_NAME,
+# GITHUB_TOKEN, GITLAB_TOKEN, FORGEJO_TOKEN, UV_INDEX_URL, GIT_AUTHOR_NAME,
 # GIT_AUTHOR_EMAIL, GIT_COMMITTER_NAME, GIT_COMMITTER_EMAIL) are forwarded as
 # well, and a value from the shell wins over the env file.
 
@@ -122,7 +122,7 @@ fi
 # config references them as {env:NAME}, so nothing is baked into the image.
 # Values set in the calling shell win over the file, so one env file can
 # serve projects with different secrets.
-SHELL_VARS=(OPENROUTER_API_KEY OPENCODE_PASSWORD GH_TOKEN GITLAB_TOKEN GITLAB_URL FORGEJO_URL FORGEJO_TOKEN UV_INDEX_URL GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL)
+SHELL_VARS=(OPENROUTER_API_KEY OPENCODE_PASSWORD GH_TOKEN GITHUB_TOKEN GITLAB_TOKEN GITLAB_URL FORGEJO_URL FORGEJO_TOKEN UV_INDEX_URL GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL)
 SHELL_OVERRIDE=""
 for name in "${SHELL_VARS[@]}"; do
   if [[ -n "${!name:-}" ]]; then

@@ -184,8 +184,13 @@ USER 0
 COPY --chown=${UID}:${GID} config/opencode/ /home/opencode/.config/opencode/
 COPY --chown=${UID}:${GID} config/gitconfig /home/opencode/.gitconfig
 COPY --chown=${UID}:${GID} .env.example /home/opencode/.env.example
-COPY --chown=root:root config/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod 0755 /usr/local/bin/entrypoint.sh
+# The entrypoint and the git credential helpers: each helper answers only for
+# its own host and stays silent when its token is not in the environment.
+COPY --chown=root:root config/bin/ /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/entrypoint.sh \
+    /usr/local/bin/git-credential-github \
+    /usr/local/bin/git-credential-gitlab \
+    /usr/local/bin/git-credential-forgejo
 
 # Run commands make the image's user the host user (Podman:
 # --userns=keep-id:uid=1000,gid=1000, Docker: --user $(id -u):$(id -g)), so

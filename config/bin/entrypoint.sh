@@ -22,32 +22,10 @@ export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-agent@localhost}"
 export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-opencode-agent}"
 export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-agent@localhost}"
 
-# GitHub: when a token is provided, configure git to authenticate with it.
-# gh itself reads GH_TOKEN from the environment.
-if [[ -n "${GH_TOKEN:-}" ]]; then
-  gh auth setup-git
-fi
-
-# GitLab and Forgejo: optional forge tokens. When provided, each token is
-# stored as a git credential for its host (the scheme is taken from the
-# instance URL), so git over HTTPS/HTTP works without a password prompt.
-# GITLAB_TOKEN defaults to gitlab.com; FORGEJO_TOKEN is only used together
-# with FORGEJO_URL.
-if [[ -n "${GITLAB_TOKEN:-}" || -n "${FORGEJO_TOKEN:-}${FORGEJO_URL:-}" ]]; then
-  {
-    if [[ -n "${GITLAB_TOKEN:-}" ]]; then
-      url="${GITLAB_URL:-https://gitlab.com}"
-      rest="${url#*://}"
-      printf '%s://oauth2:%s@%s\n' "${url%%://*}" "$GITLAB_TOKEN" "${rest%%/*}"
-    fi
-    if [[ -n "${FORGEJO_TOKEN:-}" && -n "${FORGEJO_URL:-}" ]]; then
-      rest="${FORGEJO_URL#*://}"
-      printf '%s://git:%s@%s\n' "${FORGEJO_URL%%://*}" "$FORGEJO_TOKEN" "${rest%%/*}"
-    fi
-  } >"${HOME}/.git-credentials"
-  chmod 600 "${HOME}/.git-credentials"
-  git config --global credential.helper store
-fi
+# Forge git authentication (GH_TOKEN/GITHUB_TOKEN, GITLAB_TOKEN, FORGEJO_TOKEN)
+# is handled by the git credential helpers installed in /usr/local/bin and
+# enabled in the baked gitconfig; they read the tokens from the environment at
+# request time, so nothing is written to disk.
 
 # OpenCode works in the current directory. When exactly one project is
 # mounted under /home/opencode/projects, start inside it so the TUI opens the

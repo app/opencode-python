@@ -90,10 +90,10 @@ guide in the repository.
 
 ## Git operations fail
 
-- Git over HTTPS is preconfigured by the entrypoint from the tokens in the
-  container environment: `GH_TOKEN` (GitHub, via `gh auth setup-git`),
-  `GITLAB_TOKEN` (+ `GITLAB_URL`) and `FORGEJO_TOKEN` (+ `FORGEJO_URL`).
-  Check that the token for the host you push to is set.
+- Git over HTTPS authenticates through the baked-in credential helpers from
+  the tokens in the container environment: `GH_TOKEN` or `GITHUB_TOKEN`
+  (GitHub), `GITLAB_TOKEN` (+ `GITLAB_URL`) and `FORGEJO_TOKEN`
+  (+ `FORGEJO_URL`). Check that the token for the host you push to is set.
 - Commits are signed with the `GIT_AUTHOR_*` / `GIT_COMMITTER_*` variables or
   the baked generic identity; set the variables in the env file.
 - Permission denied on files in the project (the agent cannot create, edit

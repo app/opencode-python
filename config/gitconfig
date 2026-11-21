@@ -8,6 +8,16 @@
   email = agent@localhost
 [core]
   quotepath = false
+[credential]
+  # The helpers installed in /usr/local/bin answer only for their own host:
+  # git-credential-github for https://github.com, git-credential-gitlab for
+  # https://gitlab.com plus the host from GITLAB_URL, and
+  # git-credential-forgejo for the host from FORGEJO_URL. Each stays silent
+  # when its token is not in the environment, so a token is never offered to
+  # any other remote.
+  helper = github
+  helper = gitlab
+  helper = forgejo
 [color]
   ui = true
   status = auto
