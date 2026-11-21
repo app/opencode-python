@@ -34,6 +34,9 @@ docker run -it --rm --user "$(id -u):$(id -g)" \
   ghcr.io/app/opencode-python:latest
 ```
 
+For two-way clipboard support between the TUI and the host, install kitty
+(Linux) or iTerm2 (macOS) — see [Usage](docs/usage.md#terminal).
+
 To pass secrets, add `--env-file` with a file of `NAME=value` lines (or
 `-e NAME=value` for one). Most common variables (the full list:
 [Passing secrets](docs/usage.md#passing-secrets)):
@@ -83,15 +86,15 @@ Kubernetes: [Kubernetes](docs/kubernetes.md).
 
 ## Documentation
 
-| Document                                   | Contents                                                        |
-| ------------------------------------------ | --------------------------------------------------------------- |
-| [Installation](docs/installation.md)       | Requirements, the first run, more models, the optional launcher |
-| [Usage](docs/usage.md)                     | Running the container, mounts, resources, secrets, commands     |
-| [Access](docs/api.md)                      | TUI, web UI and the HTTP API for agents, Basic auth, OpenAPI    |
-| [Kubernetes](docs/kubernetes.md)           | Deployment, Service and Secret examples for server mode         |
-| [Toolchain](docs/toolchain.md)             | Python, uv, the baked tools, installing extra packages          |
-| [Optimization](docs/optimization.md)       | OR-Tools, HiGHS, solvers, container resources, profiling        |
-| [Architecture](docs/architecture.md)       | Repository layout, the image, the multi-arch pipeline           |
-| [Updating](docs/updating.md)               | How versions are resolved and how image releases work           |
-| [Security notes](docs/security.md)         | Trust model and secret handling                                 |
-| [Troubleshooting](docs/troubleshooting.md) | Common errors and fixes                                         |
+| Document                                   | Contents                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| [Installation](docs/installation.md)       | Requirements, the first run, more models, the optional launcher           |
+| [Usage](docs/usage.md)                     | Running the container, the terminal, mounts, resources, secrets, commands |
+| [Access](docs/api.md)                      | TUI, web UI and the HTTP API for agents, Basic auth, OpenAPI              |
+| [Kubernetes](docs/kubernetes.md)           | Deployment, Service and Secret examples for server mode                   |
+| [Toolchain](docs/toolchain.md)             | Python, uv, the baked tools, installing extra packages                    |
+| [Optimization](docs/optimization.md)       | OR-Tools, HiGHS, solvers, container resources, profiling                  |
+| [Architecture](docs/architecture.md)       | Repository layout, the image, the multi-arch pipeline                     |
+| [Updating](docs/updating.md)               | How versions are resolved and how image releases work                     |
+| [Security notes](docs/security.md)         | Trust model and secret handling                                           |
+| [Troubleshooting](docs/troubleshooting.md) | Common errors and fixes                                                   |
